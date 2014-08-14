@@ -111,7 +111,7 @@ else ifeq ($(optLIB),s)
 	COMMONFLAGSlib+=-Os 
 	InfoTextLib=libs (optimize size++, -Os)
 else
-	COMMONFLAGSlib+=-O0
+	COMMONFLAGSlib+=-O3
 	InfoTextLib=libs (no optimize, -O0)
 endif
 
