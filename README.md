@@ -12,7 +12,7 @@ How to Use It:
 
 3. Open the terminal and 'cd' into this 'libraries' floder;
 
-4. Type: make optLIB=O3 tshow
+4. Type: make optLIB=3 tshow
 
 5. Then you will get libraries compiled with full optimization 
    and a archive file named 'libstm32f37x.a' in the 'libraries' floder;
