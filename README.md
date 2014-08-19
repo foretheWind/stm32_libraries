@@ -18,3 +18,9 @@ How to Use It:
    and a archive file named 'libstm32f37x.a' in the 'libraries' floder;
    
 6. All Done;
+
+Caution:
+
+If you want to modify files within 'libraries' floder, please remember 
+
+'make clean' and 'make' to rebuild the whole library to take effect.
