@@ -35,21 +35,18 @@
 
 LIBDIR=$(shell readlink -f "$(dir $(lastword $(MAKEFILE_LIST)))")
 
-#Adust the following line to the library in use
+# Adust the following line to the library in use
 STMLIB=$(LIBDIR)/STM32_USB-FS-Device_Lib_V4.0.0/Libraries
 
-#Adjust TypeOfMCU in use, see CMSIS file "stm32f10x.h"
-#STM32F103RBT (128KB FLASH, 20KB RAM) --> STM32F10X_MD
-#TypeOfMCU=STM32F10X_MD
-#STM32F103RET (512KB FLASH, 64KB RAM) --> STM32F10X_HD
-#TypeOfMCU=STM32F10X_HD
-#STM32F372CCT (512KB FLASH, 32KB RAM)
+# STM32F372CCT (512KB FLASH, 32KB RAM)
 TypeOfMCU	= STM32F37X
 
-#Define which series of mcu in use
+# Define which series of mcu in use
 SERIES 		= STM32F37x
 series		= stm32f37x
 
+# Specify the value of oscillator in use
+HSE_VALUE	= 16000000L
 
 TC=arm-none-eabi
 CC=$(TC)-gcc
@@ -118,3 +115,4 @@ endif
 CFLAGSlib+=$(COMMONFLAGSlib) -Wall -Werror $(INCLUDE)
 CFLAGSlib+=-D $(TypeOfMCU)
 CFLAGSlib+=-D VECT_TAB_FLASH
+CFLAGSlib+=-D HSE_VALUE=$(HSE_VALUE)
