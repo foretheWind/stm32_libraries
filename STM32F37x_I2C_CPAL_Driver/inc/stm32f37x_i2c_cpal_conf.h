@@ -123,14 +123,14 @@
 /* Transfer UserCallbacks : To use a Transfer callback comment the relative define */
 #define CPAL_I2C_TX_UserCallback        (void)
 #define CPAL_I2C_RX_UserCallback        (void)
-//#define CPAL_I2C_TXTC_UserCallback      (void)
-//#define CPAL_I2C_RXTC_UserCallback      (void)
+#define CPAL_I2C_TXTC_UserCallback      (void)
+#define CPAL_I2C_RXTC_UserCallback      (void)
 
 /* DMA Transfer UserCallbacks : To use a DMA Transfer UserCallbacks comment the relative define */
 #define CPAL_I2C_DMATXTC_UserCallback   (void)
 #define CPAL_I2C_DMATXHT_UserCallback   (void)
 #define CPAL_I2C_DMATXTE_UserCallback   (void)
-#define CPAL_I2C_DMARXTC_UserCallback   (void
+#define CPAL_I2C_DMARXTC_UserCallback   (void)
 #define CPAL_I2C_DMARXHT_UserCallback   (void)
 #define CPAL_I2C_DMARXTE_UserCallback   (void)
 
@@ -151,26 +151,6 @@
                  By default Timeout procedure is implemented with Systick timer and
                  CPAL_I2C_TIMEOUT_Manager is defined as SysTick_Handler.
                  */
-
-
-//#define _CPAL_TIMEOUT_INIT()           SysTick_Config((SystemCoreClock / 1000));\
-//                                       NVIC_SetPriority (SysTick_IRQn, 0)
-//                                       /*<! Configure and enable the systick timer
-//                                       to generate an interrupt when counter value
-//                                       reaches 0. In the Systick interrupt handler
-//                                       the Timeout Error function is called. Time base is 1 ms */
-//
-//#define _CPAL_TIMEOUT_DEINIT()         SysTick->CTRL = 0        /*<! Disable the systick timer */
-//
-//
-//#define CPAL_I2C_TIMEOUT_Manager       SysTick_Handler         /*<! This callback is used to handle Timeout error.
-//                                                                     When a timeout occurs CPAL_TIMEOUT_UserCallback
-//                                                                     is called to handle this error */
-//#ifndef CPAL_I2C_TIMEOUT_Manager
-//   void CPAL_I2C_TIMEOUT_Manager(void);
-//#else
-//   void SysTick_Handler(void);
-//#endif /* CPAL_I2C_TIMEOUT_Manager */
 
 #define _CPAL_TIMEOUT_INIT()           	NVIC_InitTypeDef NVIC_InitStructure;\
 										TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;\

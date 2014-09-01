@@ -42,6 +42,7 @@ extern "C" {
 #include "stm32f37x_gpio.h"
 #include "stm32f37x_rcc.h"
 #include "stm32f37x_misc.h"
+#include "stm32f37x_tim.h"
 
 /*========= CPAL library files includes =========*/
 #include "stm32f37x_i2c_cpal.h"
@@ -133,15 +134,15 @@ extern "C" {
 
 /*-----------I2C2 Device -----------*/
 
-#define CPAL_I2C2_SCL_GPIO_PORT         GPIOA
-#define CPAL_I2C2_SCL_GPIO_CLK          RCC_AHBPeriph_GPIOA
-#define CPAL_I2C2_SCL_GPIO_PIN          GPIO_Pin_9
-#define CPAL_I2C2_SCL_GPIO_PINSOURCE    GPIO_PinSource9
+#define CPAL_I2C2_SCL_GPIO_PORT         GPIOF
+#define CPAL_I2C2_SCL_GPIO_CLK          RCC_AHBPeriph_GPIOF
+#define CPAL_I2C2_SCL_GPIO_PIN          GPIO_Pin_6
+#define CPAL_I2C2_SCL_GPIO_PINSOURCE    GPIO_PinSource6
 
-#define CPAL_I2C2_SDA_GPIO_PORT         GPIOA
-#define CPAL_I2C2_SDA_GPIO_CLK          RCC_AHBPeriph_GPIOA
-#define CPAL_I2C2_SDA_GPIO_PIN          GPIO_Pin_10
-#define CPAL_I2C2_SDA_GPIO_PINSOURCE    GPIO_PinSource10
+#define CPAL_I2C2_SDA_GPIO_PORT         GPIOF
+#define CPAL_I2C2_SDA_GPIO_CLK          RCC_AHBPeriph_GPIOF
+#define CPAL_I2C2_SDA_GPIO_PIN          GPIO_Pin_7
+#define CPAL_I2C2_SDA_GPIO_PINSOURCE    GPIO_PinSource7
 
 /*-----------------------------------------------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------------------------------------------------*/
