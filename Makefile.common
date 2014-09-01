@@ -61,6 +61,7 @@ INCLUDE+=-I$(STMLIB)/CMSIS/Device/ST/$(SERIES)/Include
 INCLUDE+=-I$(STMLIB)/CMSIS/Device/ST/$(SERIES)/Source/Templates
 INCLUDE+=-I$(STMLIB)/$(SERIES)_StdPeriph_Driver/inc
 INCLUDE+=-I$(STMLIB)/STM32_USB-FS-Device_Driver/inc
+INCLUDE+=-I$(LIBDIR)/STM32F37x_I2C_CPAL_Driver/inc
 
 COMMONFLAGS		 = -g -mlittle-endian -mthumb -mcpu=cortex-m4 -march=armv7e-m 
 COMMONFLAGS		+= -mfpu=fpv4-sp-d16 -mfloat-abi=hard

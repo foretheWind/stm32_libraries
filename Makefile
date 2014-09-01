@@ -21,6 +21,13 @@ $(LIBS):
 				-I../../CMSIS/Device/ST/$(SERIES)/Include \
 				-I../inc \
 				*.c
+	@cd $(LIBDIR)/STM32F37x_I2C_CPAL_Driver/src && \
+			$(CC) $(CFLAGSlib) \
+				-D"assert_param(expr)=((void)0)" \
+				-I../../CMSIS/Include \
+				-I../../CMSIS/Device/ST/$(SERIES)/Include \
+				-I../inc \
+				*.c
 #	@cd $(STMLIB)/STM32_USB-FS-Device_Driver/src && \
 #			$(CC) $(CFLAGSlib) \
 # 				-D"assert_param(expr)=((void)0)" \
