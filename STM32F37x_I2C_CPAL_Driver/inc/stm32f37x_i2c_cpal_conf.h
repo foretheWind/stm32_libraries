@@ -106,13 +106,13 @@
 
    WARNING: These two defines are EXCLUSIVE, only one define should be uncommented !
  */
-#define USE_SINGLE_ERROR_CALLBACK   /*<! select single UserCallbacks type */
+//#define USE_SINGLE_ERROR_CALLBACK   /*<! select single UserCallbacks type */
 //#define USE_MULTIPLE_ERROR_CALLBACK /*<! select multiple UserCallbacks type */
 
 /* Error UserCallbacks : To use an Error UserCallback comment the relative define */
 
 /* Single Error Callback */
-//#define CPAL_I2C_ERR_UserCallback       (void)
+#define CPAL_I2C_ERR_UserCallback       (void)
 
 /* Multiple Error Callback */
 #define CPAL_I2C_BERR_UserCallback      (void)
@@ -151,26 +151,38 @@
                  By default Timeout procedure is implemented with Systick timer and
                  CPAL_I2C_TIMEOUT_Manager is defined as SysTick_Handler.
                  */
+static inline void timer18_config(void)
+{
+	NVIC_InitTypeDef NVIC_InitStructure;
+	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 
-#define _CPAL_TIMEOUT_INIT()           	NVIC_InitTypeDef NVIC_InitStructure;\
-										TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;\
-										RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM18, ENABLE);\
-										TIM_TimeBaseStructure.TIM_Period = 1000 - 1;\
-										TIM_TimeBaseStructure.TIM_Prescaler = SystemCoreClock / 1000000 - 1;\
-										TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;\
-										TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;\
-										TIM_TimeBaseInit(TIM18, &TIM_TimeBaseStructure);\
-										TIM_ARRPreloadConfig(TIM18, DISABLE);\
-										NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);\
-										NVIC_InitStructure.NVIC_IRQChannel = TIM18_DAC2_IRQn;\
-										NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;\
-										NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;\
-										NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;\
-										NVIC_Init(&NVIC_InitStructure);\
-										TIM_ITConfig(TIM18, TIM_IT_Update, ENABLE);\
-										TIM_Cmd(TIM18, ENABLE)
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM18, ENABLE);
 
-#define _CPAL_TIMEOUT_DEINIT()        	TIM_Cmd(TIM18, DISABLE)
+	TIM_TimeBaseStructure.TIM_Period = 5000 - 1;
+	TIM_TimeBaseStructure.TIM_Prescaler = SystemCoreClock / 1000000 - 1;
+	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+	TIM_TimeBaseInit(TIM18, &TIM_TimeBaseStructure);
+	TIM_ARRPreloadConfig(TIM18, DISABLE);
+
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+	NVIC_InitStructure.NVIC_IRQChannel = TIM18_DAC2_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+
+	TIM_ClearITPendingBit(TIM18, TIM_IT_Update);
+	TIM_ITConfig(TIM18, TIM_IT_Update, ENABLE);
+
+	TIM_Cmd(TIM18, ENABLE);
+}
+
+
+
+#define _CPAL_TIMEOUT_INIT()			timer18_config()
+
+#define _CPAL_TIMEOUT_DEINIT()        	TIM18->CR1 &= (uint16_t)(~((uint16_t)TIM_CR1_CEN))
 
 
 #define CPAL_I2C_TIMEOUT_Manager       	TIM18_DAC2_IRQHandler         /*<! This callback is used to handle Timeout error.
@@ -183,17 +195,18 @@
    void TIM18_DAC2_IRQHandler(void);
 #endif /* CPAL_I2C_TIMEOUT_Manager */
 
-/*#define CPAL_TIMEOUT_UserCallback        (void)      */            /*<! Comment this line and implement the callback body in your
+/*#define CPAL_TIMEOUT_UserCallback        (void)                  *//*<! Comment this line and implement the callback body in your
                                                                       application in order to use the Timeout Callback.
                                                                       It is strongly advised to implement this callback, since it
                                                                       is the only way to manage timeout errors.*/
 
 /* Maximum Timeout values for each communication operation (preferably, Time base should be 1 Millisecond).
    The exact maximum value is the sum of event timeout value and the CPAL_I2C_TIMEOUT_MIN value defined below */
-#define CPAL_I2C_TIMEOUT_TC             5
-#define CPAL_I2C_TIMEOUT_TCR            5
-#define CPAL_I2C_TIMEOUT_TXIS           5
-#define CPAL_I2C_TIMEOUT_BUSY           5
+#define CPAL_I2C_TIMEOUT_TC             2
+#define CPAL_I2C_TIMEOUT_TCR            2
+#define CPAL_I2C_TIMEOUT_TXIS           2
+#define CPAL_I2C_TIMEOUT_BUSY           2
+#define CPAL_I2C_TIMEOUT_TXE			2
 
 /* DO NOT MODIFY THESE VALUES ---------------------------------------------------------*/
 #define CPAL_I2C_TIMEOUT_DEFAULT        ((uint32_t)0xFFFFFFFF)
@@ -236,7 +249,7 @@
    I2Cx Interrupt Priority are defined in stm32f37x_i2c_cpal_hal.h file in Section 3 */
 
 #define I2C1_IT_OFFSET_SUBPRIO          0      /* I2C1 SUB-PRIORITY Offset */
-#define I2C1_IT_OFFSET_PREPRIO          2      /* I2C1 PREEMPTION PRIORITY Offset */
+#define I2C1_IT_OFFSET_PREPRIO          1      /* I2C1 PREEMPTION PRIORITY Offset */
 
 #define I2C2_IT_OFFSET_SUBPRIO          0      /* I2C2 SUB-PRIORITY Offset */
 #define I2C2_IT_OFFSET_PREPRIO          1      /* I2C2 PREEMPTION PRIORITY Offset */

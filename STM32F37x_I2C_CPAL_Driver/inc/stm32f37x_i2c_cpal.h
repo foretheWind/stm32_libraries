@@ -196,8 +196,8 @@ typedef enum
                                             - In reception when a new byte is received and the RXDR register has not been read yet
                                             New received byte is lost, and a NACK is automatically sent as a response to the new byte.
                                             - In transmission :
-                                              – when STOPF=1 and the first data should be sent. The content of TXDATA is sent.
-                                              – when a new byte should be sent and the TXDR register has not been written yet.
+                                              ï¿½ when STOPF=1 and the first data should be sent. The content of TXDATA is sent.
+                                              ï¿½ when a new byte should be sent and the TXDR register has not been written yet.
                                                 The content of TXDATA is sent (same byte is sent twice)
                                            When an overrun or underrun error is detected, OVR flag is set in I2C_ISR register,
                                            and an interrupt is generated if ERRIE is set in I2C_CR1 register.*/
@@ -350,10 +350,10 @@ extern CPAL_InitTypeDef I2C2_DevStructure;
 
 uint32_t  CPAL_I2C_Init         (CPAL_InitTypeDef* pDevInitStruct); /*<!This function Initializes the selected I2C device
                                                                         and all needed resources (GPIOs, clocks, DMA,
-                                                                        interrupts …)*/
+                                                                        interrupts ï¿½)*/
 
 uint32_t  CPAL_I2C_DeInit       (CPAL_InitTypeDef* pDevInitStruct); /*<!This function free the resources used by the I2C
-                                                                        device (GPIOs, clocks, DMA, interrupts …) and
+                                                                        device (GPIOs, clocks, DMA, interrupts ï¿½) and
                                                                         deinitialize the device itself */
 
 uint32_t  CPAL_I2C_StructInit   (CPAL_InitTypeDef* pDevInitStruct); /*<!This function Initializes I2C device structure

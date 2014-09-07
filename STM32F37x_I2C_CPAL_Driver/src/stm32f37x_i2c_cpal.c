@@ -41,16 +41,22 @@
    flag would be done only once, while the required behavior is to check the flag
    continuously).*/
 
-#define __CPAL_I2C_TIMEOUT_DETECT                ((pDevInitStruct->wCPAL_Timeout == CPAL_I2C_TIMEOUT_MIN) ||\
-                                                 (pDevInitStruct->wCPAL_Timeout == CPAL_I2C_TIMEOUT_DEFAULT))
+#define __CPAL_I2C_TIMEOUT_DETECT                (pDevInitStruct->wCPAL_Timeout == CPAL_I2C_TIMEOUT_MIN)
 
-#define __CPAL_I2C_TIMEOUT(cmd, timeout)         pDevInitStruct->wCPAL_Timeout = CPAL_I2C_TIMEOUT_MIN + (timeout);\
+#define __CPAL_I2C_TIMEOUT(cmd, timeout)         __disable_irq();\
+												 pDevInitStruct->wCPAL_Timeout = CPAL_I2C_TIMEOUT_MIN + (timeout);\
+												 TIM18->EGR = TIM_PSCReloadMode_Immediate;\
+												 TIM18->SR &= (uint16_t)~TIM_IT_Update;\
+												 NVIC_ClearPendingIRQ(TIM18_DAC2_IRQn);\
+												 __enable_irq();\
                                                  while (((cmd) == 0) && (!__CPAL_I2C_TIMEOUT_DETECT))\
                                                  if (__CPAL_I2C_TIMEOUT_DETECT)\
                                                  {\
                                                    return CPAL_I2C_Timeout (pDevInitStruct); \
                                                  }\
-                                                 pDevInitStruct->wCPAL_Timeout = CPAL_I2C_TIMEOUT_DEFAULT
+                                                 __disable_irq();\
+                                                 pDevInitStruct->wCPAL_Timeout = CPAL_I2C_TIMEOUT_DEFAULT;\
+                                                 __enable_irq()
 
 
 /* Private variables ---------------------------------------------------------*/
@@ -219,6 +225,13 @@ uint32_t CPAL_I2C_Init(CPAL_InitTypeDef* pDevInitStruct)
     I2C_Init(CPAL_I2C_DEVICE[pDevInitStruct->CPAL_Dev], pDevInitStruct->pCPAL_I2C_Struct);
 
     CPAL_LOG("\n\rLOG : I2C Device Config");
+
+    /* If automatic end mode is selected */
+    if ((pDevInitStruct->wCPAL_Options & CPAL_OPT_I2C_AUTOMATIC_END) != 0)
+    {
+      /* Enable automatic end mode */
+      CR2_tmp |= I2C_CR2_AUTOEND;
+    }
 
     /* If General Call mode option bit selected */
     if ((pDevInitStruct->wCPAL_Options & CPAL_OPT_I2C_GENCALL) != 0)
@@ -856,7 +869,8 @@ uint32_t CPAL_I2C_Read(CPAL_InitTypeDef* pDevInitStruct)
         __CPAL_I2C_TIMEOUT(__CPAL_I2C_HAL_GET_TXIS(pDevInitStruct->CPAL_Dev), CPAL_I2C_TIMEOUT_TXIS);
 
         /* Send register address */
-        __CPAL_I2C_HAL_SEND(pDevInitStruct->CPAL_Dev, (uint8_t)(pDevInitStruct->pCPAL_TransferRx->wAddr2));        
+        __CPAL_I2C_HAL_SEND(pDevInitStruct->CPAL_Dev, (uint8_t)(pDevInitStruct->pCPAL_TransferRx->wAddr2));
+
       }
     #ifdef CPAL_16BIT_REG_OPTION
       /* If 16 Bit register mode */
@@ -883,6 +897,7 @@ uint32_t CPAL_I2C_Read(CPAL_InitTypeDef* pDevInitStruct)
         /* Send register address (LSB) */
         __CPAL_I2C_HAL_SEND(pDevInitStruct->CPAL_Dev, (uint8_t)((pDevInitStruct->pCPAL_TransferRx->wAddr2)& 0x00FF));
       }
+#endif /* CPAL_16BIT_REG_OPTION */
 
       /* Wait until TC flag is set */ 
       __CPAL_I2C_TIMEOUT(__CPAL_I2C_HAL_GET_TC(pDevInitStruct->CPAL_Dev), CPAL_I2C_TIMEOUT_TC);
@@ -890,7 +905,6 @@ uint32_t CPAL_I2C_Read(CPAL_InitTypeDef* pDevInitStruct)
       /* Set Nbytes to zero */
       CR2_tmp &= ~I2C_CR2_NBYTES;
 
-    #endif /* CPAL_16BIT_REG_OPTION */
     }
   #endif /* CPAL_I2C_MEM_ADDR */
 #endif /* CPAL_I2C_MASTER_MODE */
@@ -1530,6 +1544,8 @@ void CPAL_I2C_TIMEOUT_Manager(void)
 {
   uint32_t index = 0;
 
+  TIM18->SR &= (uint16_t)~TIM_IT_Update;
+
   /* Manage I2C timeouts conditions */
   for (index = 0; index < CPAL_I2C_DEV_NUM; index ++)
   {
@@ -1564,6 +1580,7 @@ void CPAL_I2C_TIMEOUT_Manager(void)
       }
     }
   }
+
 }
 
 
@@ -1585,6 +1602,7 @@ uint32_t CPAL_I2C_Timeout (CPAL_InitTypeDef* pDevInitStruct)
 
   /* Call Timeout Callback and quit current function */
   return (CPAL_TIMEOUT_UserCallback(pDevInitStruct));
+
 }
 
 /*================== CPAL_I2C_Event_Handler ==================*/

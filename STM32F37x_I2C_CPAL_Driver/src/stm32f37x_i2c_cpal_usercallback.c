@@ -31,10 +31,80 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private defines -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+GPIO_TypeDef* const I2C_SCL_GPIO_PORT[2] = {CPAL_I2C1_SCL_GPIO_PORT,CPAL_I2C2_SCL_GPIO_PORT};
+extern const uint16_t CPAL_I2C_SCL_GPIO_PIN[];
+
+GPIO_TypeDef* const I2C_SDA_GPIO_PORT[2] = {CPAL_I2C1_SDA_GPIO_PORT,CPAL_I2C2_SDA_GPIO_PORT};
+extern const uint16_t CPAL_I2C_SDA_GPIO_PIN[];
+
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
+static void delay_us(uint32_t delay_us)
+{
+	uint32_t nb_loop;
+	nb_loop = (8 * delay_us) + 1; /* uS (divide by 4 because each loop take about 4 cycles including nop +1 is here to avoid delay of 0 */
+	asm volatile(
+					"1: " "\n\t"
+					" nop " "\n\t"
+					" subs.w %0, %0, #1 " "\n\t"
+					" bne 1b " "\n\t"
+					: "=r" (nb_loop)
+					: "0"(nb_loop)
+					: "r3"
+				);
+}
+
+static void i2c_bus_reset(CPAL_DevTypeDef Device)
+{
+	GPIO_InitTypeDef GPIO_InitStructure;
+
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
+
+	GPIO_InitStructure.GPIO_Pin = CPAL_I2C_SCL_GPIO_PIN[Device];
+	GPIO_Init((GPIO_TypeDef*)I2C_SCL_GPIO_PORT[Device], &GPIO_InitStructure);
+
+	GPIO_InitStructure.GPIO_Pin = CPAL_I2C_SDA_GPIO_PIN[Device];
+	GPIO_Init((GPIO_TypeDef*)I2C_SDA_GPIO_PORT[Device], &GPIO_InitStructure);
+
+    /* Release both lines */
+	I2C_SCL_GPIO_PORT[Device]->BSRR = CPAL_I2C_SCL_GPIO_PIN[Device];
+	I2C_SDA_GPIO_PORT[Device]->BSRR = CPAL_I2C_SDA_GPIO_PIN[Device];
+
+    /*
+     * Make sure the bus is free by clocking it until any slaves release the
+     * bus.
+     */
+	while (!((I2C_SDA_GPIO_PORT[Device]->IDR) & CPAL_I2C_SDA_GPIO_PIN[Device])) {
+        /* Wait for any clock stretching to finish */
+		while (!((I2C_SCL_GPIO_PORT[Device]->IDR) & CPAL_I2C_SCL_GPIO_PIN[Device]))
+			;
+		delay_us(10);
+
+		/* pull low */
+		I2C_SCL_GPIO_PORT[Device]->BRR = CPAL_I2C_SCL_GPIO_PIN[Device];
+		delay_us(10);
+
+		/* release high again */
+		I2C_SCL_GPIO_PORT[Device]->BSRR = CPAL_I2C_SCL_GPIO_PIN[Device];
+		delay_us(10);
+	}
+
+    /* generate start then stop condition */
+	I2C_SDA_GPIO_PORT[Device]->BRR = CPAL_I2C_SDA_GPIO_PIN[Device];
+	delay_us(10);
+	I2C_SCL_GPIO_PORT[Device]->BRR = CPAL_I2C_SCL_GPIO_PIN[Device];
+	delay_us(10);
+	I2C_SCL_GPIO_PORT[Device]->BSRR = CPAL_I2C_SDA_GPIO_PIN[Device];
+	delay_us(10);
+	I2C_SDA_GPIO_PORT[Device]->BSRR = CPAL_I2C_SCL_GPIO_PIN[Device];
+
+	CPAL_I2C_HAL_GPIOInit(Device);
+}
 
 
 /*------------------------------------------------------------------------------
@@ -52,18 +122,10 @@
   */
 uint32_t CPAL_TIMEOUT_UserCallback(CPAL_InitTypeDef* pDevInitStruct)
 {
-	/* Update CPAL states */
-	pDevInitStruct->CPAL_State = CPAL_STATE_READY;
-	pDevInitStruct->wCPAL_DevError = CPAL_I2C_ERR_NONE ;
-	pDevInitStruct->wCPAL_Timeout  = CPAL_I2C_TIMEOUT_DEFAULT;
+	/* handle i2c bus lockup */
+	i2c_bus_reset(pDevInitStruct->CPAL_Dev);
 
-	/* DeInitialize CPAL device */
-	CPAL_I2C_DeInit(pDevInitStruct);
-
-	/* Initialize CPAL device with the selected parameters */
-	CPAL_I2C_Init(pDevInitStruct);
-
-	return CPAL_PASS;
+	return CPAL_FAIL;
 }
 
 
@@ -121,6 +183,9 @@ uint32_t CPAL_TIMEOUT_UserCallback(CPAL_InitTypeDef* pDevInitStruct)
   */
 /*void CPAL_I2C_DMATXTC_UserCallback(CPAL_InitTypeDef* pDevInitStruct)
 {
+    // Update CPAL_State
+	pDevInitStruct->CPAL_State = CPAL_STATE_READY;
+	pDevInitStruct->wCPAL_DevError = CPAL_I2C_ERR_NONE;
 
 }*/
 
@@ -154,7 +219,9 @@ uint32_t CPAL_TIMEOUT_UserCallback(CPAL_InitTypeDef* pDevInitStruct)
   */
 /*void CPAL_I2C_DMARXTC_UserCallback(CPAL_InitTypeDef* pDevInitStruct)
 {
-
+    // Update CPAL_State
+	pDevInitStruct->CPAL_State = CPAL_STATE_READY;
+	pDevInitStruct->wCPAL_DevError = CPAL_I2C_ERR_NONE;
 }*/
 
 
@@ -191,19 +258,10 @@ uint32_t CPAL_TIMEOUT_UserCallback(CPAL_InitTypeDef* pDevInitStruct)
   * @param  DeviceError
   * @retval None
   */
-void CPAL_I2C_ERR_UserCallback(CPAL_DevTypeDef pDevInstance, uint32_t DeviceError)
+/*void CPAL_I2C_ERR_UserCallback(CPAL_DevTypeDef pDevInstance, uint32_t DeviceError)
 {
-	/* Update CPAL states */
-	I2C_DevStructures[pDevInstance]->CPAL_State = CPAL_STATE_READY;
-	I2C_DevStructures[pDevInstance]->wCPAL_DevError = CPAL_I2C_ERR_NONE;
 
-	/* Deinitialize CPAL device */
-	CPAL_I2C_DeInit(I2C_DevStructures[pDevInstance]);
-
-	/* Initialize CPAL device with the selected parameters */
-	CPAL_I2C_Init(I2C_DevStructures[pDevInstance]);
-
-}
+}*/
 
 
 /**
