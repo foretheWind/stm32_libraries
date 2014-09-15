@@ -246,20 +246,20 @@ void RCC_HSEConfig(uint8_t RCC_HSE)
 
 /**
   * @brief  Waits for HSE start-up.
-  * @note   This function waits on HSERDY flag to be set and return SUCCESS if 
-  *         this flag is set, otherwise returns ERROR if the timeout is reached 
+  * @note   This function waits on HSERDY flag to be set and return STATUS_SUCCESS if
+  *         this flag is set, otherwise returns STATUS_ERROR if the timeout is reached
   *         and this flag is not set. The timeout value is defined by the constant
   *         HSE_STARTUP_TIMEOUT in stm32f37x.h file. You can tailor it depending
   *         on the HSE crystal used in your application.
   * @param  None
   * @retval An ErrorStatus enumeration value:
-  *          - SUCCESS: HSE oscillator is stable and ready to use
-  *          - ERROR: HSE oscillator not yet ready
+  *          - STATUS_SUCCESS: HSE oscillator is stable and ready to use
+  *          - STATUS_ERROR: HSE oscillator not yet ready
   */
 ErrorStatus RCC_WaitForHSEStartUp(void)
 {
   __IO uint32_t StartUpCounter = 0;
-  ErrorStatus status = ERROR;
+  ErrorStatus status = STATUS_ERROR;
   FlagStatus HSEStatus = RESET;
   
   /* Wait till HSE is ready and if timeout is reached exit */
@@ -271,11 +271,11 @@ ErrorStatus RCC_WaitForHSEStartUp(void)
   
   if (RCC_GetFlagStatus(RCC_FLAG_HSERDY) != RESET)
   {
-    status = SUCCESS;
+    status = STATUS_SUCCESS;
   }
   else
   {
-    status = ERROR;
+    status = STATUS_ERROR;
   }  
   return (status);
 }

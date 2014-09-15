@@ -325,23 +325,23 @@ static uint8_t RTC_Bcd2ToByte(uint8_t Value);
   *         registers.       
   * @param  None
   * @retval An ErrorStatus enumeration value:
-  *          - SUCCESS: RTC registers are deinitialized
-  *          - ERROR: RTC registers are not deinitialized
+  *          - STATUS_SUCCESS: RTC registers are deinitialized
+  *          - STATUS_ERROR: RTC registers are not deinitialized
   */
 ErrorStatus RTC_DeInit(void)
 {
   __IO uint32_t wutcounter = 0x00;
   uint32_t wutwfstatus = 0x00;
-  ErrorStatus status = ERROR;
+  ErrorStatus status = STATUS_ERROR;
   
   /* Disable the write protection for RTC registers */
   RTC->WPR = 0xCA;
   RTC->WPR = 0x53;
 
   /* Set Initialization mode */
-  if (RTC_EnterInitMode() == ERROR)
+  if (RTC_EnterInitMode() == STATUS_ERROR)
   {
-    status = ERROR;
+    status = STATUS_ERROR;
   }  
   else
   {
@@ -361,7 +361,7 @@ ErrorStatus RTC_DeInit(void)
     
     if ((RTC->ISR & RTC_ISR_WUTWF) == RESET)
     {
-      status = ERROR;
+      status = STATUS_ERROR;
     }
     else
     {
@@ -383,13 +383,13 @@ ErrorStatus RTC_DeInit(void)
       RTC->TAFCR = 0x00000000;
       
       /* Wait till the RTC RSF flag is set */
-      if (RTC_WaitForSynchro() == ERROR)
+      if (RTC_WaitForSynchro() == STATUS_ERROR)
       {
-        status = ERROR;
+        status = STATUS_ERROR;
       }
       else
       {
-        status = SUCCESS;
+        status = STATUS_SUCCESS;
       }
     }
   }
@@ -408,12 +408,12 @@ ErrorStatus RTC_DeInit(void)
   * @note   The RTC Prescaler register is write protected and can be written in 
   *         initialization mode only.  
   * @retval An ErrorStatus enumeration value:
-  *          - SUCCESS: RTC registers are initialized
-  *          - ERROR: RTC registers are not initialized  
+  *          - STATUS_SUCCESS: RTC registers are initialized
+  *          - STATUS_ERROR: RTC registers are not initialized
   */
 ErrorStatus RTC_Init(RTC_InitTypeDef* RTC_InitStruct)
 {
-  ErrorStatus status = ERROR;
+  ErrorStatus status = STATUS_ERROR;
   
   /* Check the parameters */
   assert_param(IS_RTC_HOUR_FORMAT(RTC_InitStruct->RTC_HourFormat));
@@ -425,9 +425,9 @@ ErrorStatus RTC_Init(RTC_InitTypeDef* RTC_InitStruct)
   RTC->WPR = 0x53;
 
   /* Set Initialization mode */
-  if (RTC_EnterInitMode() == ERROR)
+  if (RTC_EnterInitMode() == STATUS_ERROR)
   {
-    status = ERROR;
+    status = STATUS_ERROR;
   } 
   else
   {
@@ -443,7 +443,7 @@ ErrorStatus RTC_Init(RTC_InitTypeDef* RTC_InitStruct)
     /* Exit Initialization mode */
     RTC_ExitInitMode();
 
-    status = SUCCESS;    
+    status = STATUS_SUCCESS;
   }
   /* Enable the write protection for RTC registers */
   RTC->WPR = 0xFF; 
@@ -503,13 +503,13 @@ void RTC_WriteProtectionCmd(FunctionalState NewState)
   *         RTC_WriteProtectionCmd(DISABLE) before calling this function.    
   * @param  None
   * @retval An ErrorStatus enumeration value:
-  *          - SUCCESS: RTC is in Init mode
-  *          - ERROR: RTC is not in Init mode  
+  *          - STATUS_SUCCESS: RTC is in Init mode
+  *          - STATUS_ERROR: RTC is not in Init mode
   */
 ErrorStatus RTC_EnterInitMode(void)
 {
   __IO uint32_t initcounter = 0x00;
-  ErrorStatus status = ERROR;
+  ErrorStatus status = STATUS_ERROR;
   uint32_t initstatus = 0x00;
      
   /* Check if the Initialization mode is set */
@@ -527,16 +527,16 @@ ErrorStatus RTC_EnterInitMode(void)
     
     if ((RTC->ISR & RTC_ISR_INITF) != RESET)
     {
-      status = SUCCESS;
+      status = STATUS_SUCCESS;
     }
     else
     {
-      status = ERROR;
+      status = STATUS_ERROR;
     }        
   }
   else
   {
-    status = SUCCESS;  
+    status = STATUS_SUCCESS;
   } 
     
   return (status);  
@@ -570,13 +570,13 @@ void RTC_ExitInitMode(void)
   *         correctly copied into the RTC_TR and RTC_DR shadow registers.   
   * @param  None
   * @retval An ErrorStatus enumeration value:
-  *          - SUCCESS: RTC registers are synchronised
-  *          - ERROR: RTC registers are not synchronised
+  *          - STATUS_SUCCESS: RTC registers are synchronised
+  *          - STATUS_ERROR: RTC registers are not synchronised
   */
 ErrorStatus RTC_WaitForSynchro(void)
 {
   __IO uint32_t synchrocounter = 0;
-  ErrorStatus status = ERROR;
+  ErrorStatus status = STATUS_ERROR;
   uint32_t synchrostatus = 0x00;
 
   /* Disable the write protection for RTC registers */
@@ -595,11 +595,11 @@ ErrorStatus RTC_WaitForSynchro(void)
     
   if ((RTC->ISR & RTC_ISR_RSF) != RESET)
   {
-    status = SUCCESS;
+    status = STATUS_SUCCESS;
   }
   else
   {
-    status = ERROR;
+    status = STATUS_ERROR;
   }
 
   /* Enable the write protection for RTC registers */
@@ -613,12 +613,12 @@ ErrorStatus RTC_WaitForSynchro(void)
   * @param  NewState: new state of the RTC reference clock.
   *          This parameter can be: ENABLE or DISABLE.
   * @retval An ErrorStatus enumeration value:
-  *          - SUCCESS: RTC reference clock detection is enabled
-  *          - ERROR: RTC reference clock detection is disabled  
+  *          - STATUS_SUCCESS: RTC reference clock detection is enabled
+  *          - STATUS_ERROR: RTC reference clock detection is disabled
   */
 ErrorStatus RTC_RefClockCmd(FunctionalState NewState)
 {
-  ErrorStatus status = ERROR;
+  ErrorStatus status = STATUS_ERROR;
 
   /* Check the parameters */
   assert_param(IS_FUNCTIONAL_STATE(NewState));
@@ -628,9 +628,9 @@ ErrorStatus RTC_RefClockCmd(FunctionalState NewState)
   RTC->WPR = 0x53;
 
   /* Set Initialization mode */
-  if (RTC_EnterInitMode() == ERROR)
+  if (RTC_EnterInitMode() == STATUS_ERROR)
   {
-    status = ERROR;
+    status = STATUS_ERROR;
   }
   else
   {
@@ -647,7 +647,7 @@ ErrorStatus RTC_RefClockCmd(FunctionalState NewState)
     /* Exit Initialization mode */
     RTC_ExitInitMode();
 
-    status = SUCCESS;
+    status = STATUS_SUCCESS;
   }
 
   /* Enable the write protection for RTC registers */
@@ -715,13 +715,13 @@ void RTC_BypassShadowCmd(FunctionalState NewState)
   * @param  RTC_TimeStruct: pointer to a RTC_TimeTypeDef structure that contains 
   *                        the time configuration information for the RTC.
   * @retval An ErrorStatus enumeration value:
-  *          - SUCCESS: RTC Time register is configured
-  *          - ERROR: RTC Time register is not configured
+  *          - STATUS_SUCCESS: RTC Time register is configured
+  *          - STATUS_ERROR: RTC Time register is not configured
   */
 ErrorStatus RTC_SetTime(uint32_t RTC_Format, RTC_TimeTypeDef* RTC_TimeStruct)
 {
   uint32_t tmpreg = 0;
-  ErrorStatus status = ERROR;
+  ErrorStatus status = STATUS_ERROR;
     
   /* Check the parameters */
   assert_param(IS_RTC_FORMAT(RTC_Format));
@@ -779,9 +779,9 @@ ErrorStatus RTC_SetTime(uint32_t RTC_Format, RTC_TimeTypeDef* RTC_TimeStruct)
   RTC->WPR = 0x53;
 
   /* Set Initialization mode */
-  if (RTC_EnterInitMode() == ERROR)
+  if (RTC_EnterInitMode() == STATUS_ERROR)
   {
-    status = ERROR;
+    status = STATUS_ERROR;
   } 
   else
   {
@@ -794,18 +794,18 @@ ErrorStatus RTC_SetTime(uint32_t RTC_Format, RTC_TimeTypeDef* RTC_TimeStruct)
     /* If  RTC_CR_BYPSHAD bit = 0, wait for synchro else this check is not needed */
     if ((RTC->CR & RTC_CR_BYPSHAD) == RESET)
     {
-      if (RTC_WaitForSynchro() == ERROR)
+      if (RTC_WaitForSynchro() == STATUS_ERROR)
       {
-        status = ERROR;
+        status = STATUS_ERROR;
       }
       else
       {
-        status = SUCCESS;
+        status = STATUS_SUCCESS;
       }
     }
     else
     {
-      status = SUCCESS;
+      status = STATUS_SUCCESS;
     }
   
   }
@@ -896,13 +896,13 @@ uint32_t RTC_GetSubSecond(void)
   * @param  RTC_DateStruct: pointer to a RTC_DateTypeDef structure that contains 
   *                         the date configuration information for the RTC.
   * @retval An ErrorStatus enumeration value:
-  *          - SUCCESS: RTC Date register is configured
-  *          - ERROR: RTC Date register is not configured
+  *          - STATUS_SUCCESS: RTC Date register is configured
+  *          - STATUS_ERROR: RTC Date register is not configured
   */
 ErrorStatus RTC_SetDate(uint32_t RTC_Format, RTC_DateTypeDef* RTC_DateStruct)
 {
   uint32_t tmpreg = 0;
-  ErrorStatus status = ERROR;
+  ErrorStatus status = STATUS_ERROR;
   
   /* Check the parameters */
   assert_param(IS_RTC_FORMAT(RTC_Format));
@@ -948,9 +948,9 @@ ErrorStatus RTC_SetDate(uint32_t RTC_Format, RTC_DateTypeDef* RTC_DateStruct)
   RTC->WPR = 0x53;
 
   /* Set Initialization mode */
-  if (RTC_EnterInitMode() == ERROR)
+  if (RTC_EnterInitMode() == STATUS_ERROR)
   {
-    status = ERROR;
+    status = STATUS_ERROR;
   } 
   else
   {
@@ -963,18 +963,18 @@ ErrorStatus RTC_SetDate(uint32_t RTC_Format, RTC_DateTypeDef* RTC_DateStruct)
     /* If  RTC_CR_BYPSHAD bit = 0, wait for synchro else this check is not needed */
     if ((RTC->CR & RTC_CR_BYPSHAD) == RESET)
     {
-      if (RTC_WaitForSynchro() == ERROR)
+      if (RTC_WaitForSynchro() == STATUS_ERROR)
       {
-        status = ERROR;
+        status = STATUS_ERROR;
       }
       else
       {
-        status = SUCCESS;
+        status = STATUS_SUCCESS;
       }
     }
     else
     {
-      status = SUCCESS;
+      status = STATUS_SUCCESS;
     }
   }
   /* Enable the write protection for RTC registers */
@@ -1262,14 +1262,14 @@ void RTC_GetAlarm(uint32_t RTC_Format, uint32_t RTC_Alarm, RTC_AlarmTypeDef* RTC
   * @param  NewState: new state of the specified alarm.
   *          This parameter can be: ENABLE or DISABLE.
   * @retval An ErrorStatus enumeration value:
-  *          - SUCCESS: RTC Alarm is enabled/disabled
-  *          - ERROR: RTC Alarm is not enabled/disabled  
+  *          - STATUS_SUCCESS: RTC Alarm is enabled/disabled
+  *          - STATUS_ERROR: RTC Alarm is not enabled/disabled
   */
 ErrorStatus RTC_AlarmCmd(uint32_t RTC_Alarm, FunctionalState NewState)
 {
   __IO uint32_t alarmcounter = 0x00;
   uint32_t alarmstatus = 0x00;
-  ErrorStatus status = ERROR;
+  ErrorStatus status = STATUS_ERROR;
     
   /* Check the parameters */
   assert_param(IS_RTC_CMD_ALARM(RTC_Alarm));
@@ -1284,7 +1284,7 @@ ErrorStatus RTC_AlarmCmd(uint32_t RTC_Alarm, FunctionalState NewState)
   {
     RTC->CR |= (uint32_t)RTC_Alarm;
 
-    status = SUCCESS;    
+    status = STATUS_SUCCESS;
   }
   else
   { 
@@ -1300,11 +1300,11 @@ ErrorStatus RTC_AlarmCmd(uint32_t RTC_Alarm, FunctionalState NewState)
     
     if ((RTC->ISR & (RTC_Alarm >> 8)) == RESET)
     {
-      status = ERROR;
+      status = STATUS_ERROR;
     } 
     else
     {
-      status = SUCCESS;
+      status = STATUS_SUCCESS;
     }        
   } 
 
@@ -1512,7 +1512,7 @@ ErrorStatus RTC_WakeUpCmd(FunctionalState NewState)
 {
   __IO uint32_t wutcounter = 0x00;
   uint32_t wutwfstatus = 0x00;
-  ErrorStatus status = ERROR;
+  ErrorStatus status = STATUS_ERROR;
   
   /* Check the parameters */
   assert_param(IS_FUNCTIONAL_STATE(NewState));
@@ -1525,7 +1525,7 @@ ErrorStatus RTC_WakeUpCmd(FunctionalState NewState)
   {
     /* Enable the Wakeup Timer */
     RTC->CR |= (uint32_t)RTC_CR_WUTE;
-    status = SUCCESS;    
+    status = STATUS_SUCCESS;
   }
   else
   {
@@ -1540,11 +1540,11 @@ ErrorStatus RTC_WakeUpCmd(FunctionalState NewState)
     
     if ((RTC->ISR & RTC_ISR_WUTWF) == RESET)
     {
-      status = ERROR;
+      status = STATUS_ERROR;
     }
     else
     {
-      status = SUCCESS;
+      status = STATUS_SUCCESS;
     }    
   }
 
@@ -1756,14 +1756,14 @@ void RTC_CalibOutputConfig(uint32_t RTC_CalibOutput)
   * @param  RTC_SmouthCalibMinusPulsesValue: Select the value of CALM[8:0] bits.
   *          This parameter can be one any value from 0 to 0x000001FF.
   * @retval An ErrorStatus enumeration value:
-  *          - SUCCESS: RTC Calib registers are configured
-  *          - ERROR: RTC Calib registers are not configured
+  *          - STATUS_SUCCESS: RTC Calib registers are configured
+  *          - STATUS_ERROR: RTC Calib registers are not configured
 */
 ErrorStatus RTC_SmoothCalibConfig(uint32_t RTC_SmoothCalibPeriod,
                                   uint32_t RTC_SmoothCalibPlusPulses,
                                   uint32_t RTC_SmouthCalibMinusPulsesValue)
 {
-  ErrorStatus status = ERROR;
+  ErrorStatus status = STATUS_ERROR;
   uint32_t recalpfcount = 0;
 
   /* Check the parameters */
@@ -1791,11 +1791,11 @@ ErrorStatus RTC_SmoothCalibConfig(uint32_t RTC_SmoothCalibPeriod,
     /* Configure the Smooth calibration settings */
     RTC->CALR = (uint32_t)((uint32_t)RTC_SmoothCalibPeriod | (uint32_t)RTC_SmoothCalibPlusPulses | (uint32_t)RTC_SmouthCalibMinusPulsesValue);
 
-    status = SUCCESS;
+    status = STATUS_SUCCESS;
   }
   else
   {
-    status = ERROR;
+    status = STATUS_ERROR;
   }
 
   /* Enable the write protection for RTC registers */
@@ -2259,12 +2259,12 @@ void RTC_OutputTypeConfig(uint32_t RTC_OutputType)
   * @param  RTC_ShiftSubFS: Select the number of Second Fractions to Substitute.
   *         This parameter can be one any value from 0 to 0x7FFF.
   * @retval An ErrorStatus enumeration value:
-  *          - SUCCESS: RTC Shift registers are configured
-  *          - ERROR: RTC Shift registers are not configured
+  *          - STATUS_SUCCESS: RTC Shift registers are configured
+  *          - STATUS_ERROR: RTC Shift registers are not configured
 */
 ErrorStatus RTC_SynchroShiftConfig(uint32_t RTC_ShiftAdd1S, uint32_t RTC_ShiftSubFS)
 {
-  ErrorStatus status = ERROR;
+  ErrorStatus status = STATUS_ERROR;
   uint32_t shpfcount = 0;
 
   /* Check the parameters */
@@ -2294,23 +2294,23 @@ ErrorStatus RTC_SynchroShiftConfig(uint32_t RTC_ShiftAdd1S, uint32_t RTC_ShiftSu
       /* Configure the Shift settings */
       RTC->SHIFTR = (uint32_t)(uint32_t)(RTC_ShiftSubFS) | (uint32_t)(RTC_ShiftAdd1S);
     
-      if(RTC_WaitForSynchro() == ERROR)
+      if(RTC_WaitForSynchro() == STATUS_ERROR)
       {
-        status = ERROR;
+        status = STATUS_ERROR;
       }
       else
       {
-        status = SUCCESS;
+        status = STATUS_SUCCESS;
       }
     }
     else
     {
-      status = ERROR;
+      status = STATUS_ERROR;
     }
   }
   else
   {
-    status = ERROR;
+    status = STATUS_ERROR;
   }
 
   /* Enable the write protection for RTC registers */
