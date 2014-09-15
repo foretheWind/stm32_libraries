@@ -156,14 +156,14 @@ static inline void timer18_config(void)
 	NVIC_InitTypeDef NVIC_InitStructure;
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM18, ENABLE);
+    RCC->APB1ENR |= RCC_APB1Periph_TIM18;
 
 	TIM_TimeBaseStructure.TIM_Period = 5000 - 1;
 	TIM_TimeBaseStructure.TIM_Prescaler = SystemCoreClock / 1000000 - 1;
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
 	TIM_TimeBaseInit(TIM18, &TIM_TimeBaseStructure);
-	TIM_ARRPreloadConfig(TIM18, DISABLE);
+	TIM18->CR1 |= TIM_CR1_ARPE;
 
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 	NVIC_InitStructure.NVIC_IRQChannel = TIM18_DAC2_IRQn;
@@ -172,10 +172,10 @@ static inline void timer18_config(void)
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 
-	TIM_ClearITPendingBit(TIM18, TIM_IT_Update);
-	TIM_ITConfig(TIM18, TIM_IT_Update, ENABLE);
+	TIM18->SR = (uint16_t)~TIM_IT_Update;
+	TIM18->DIER |= TIM_IT_Update;
 
-	TIM_Cmd(TIM18, ENABLE);
+	TIM18->CR1 |= TIM_CR1_CEN;
 }
 
 
