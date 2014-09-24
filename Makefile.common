@@ -113,7 +113,7 @@ else
 	InfoTextLib=libs (full optimize, -O3)
 endif
 
-CFLAGSlib+=$(COMMONFLAGSlib) -Wall -Werror $(INCLUDE)
+CFLAGSlib+=$(COMMONFLAGSlib) -Wall -Werror -fdata-sections -ffunction-sections $(INCLUDE)
 CFLAGSlib+=-D $(TypeOfMCU)
 CFLAGSlib+=-D VECT_TAB_FLASH
 CFLAGSlib+=-D HSE_VALUE=$(HSE_VALUE)
